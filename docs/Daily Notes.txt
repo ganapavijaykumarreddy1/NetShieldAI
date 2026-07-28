@@ -1,0 +1,11 @@
+Network Anomaly Detection and Threat Monitoring System
+
+30-06-2026 TO DO list:
+ Design architecture Diagram of NetShield AI
+create user management module for different roles- login page, registration page , we have to save the users details in database, use PostgreSQL for data base
+create a database schema for saving the user credentials
+
+And then do traffic monitoring 
+
+1-07-2026 :
+
