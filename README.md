@@ -2,7 +2,7 @@
 
 Welcome to **NetShield AI**, an enterprise-grade cybersecurity monitoring platform built as part of the **Infosys Springboard Virtual Internship**. 
 
-This repository contains a full-stack cybersecurity application featuring a robust **AI-powered Threat Detection Engine**, a **Live Network Analytics Dashboard**, User Management, and a dark-themed security-oriented React frontend powered by a FastAPI PostgreSQL backend.
+This repository contains the completed deliverables up to **Milestone-2**, featuring a full-stack cybersecurity application with a robust **AI-powered Threat Detection Engine**, a **Live Network Analytics Dashboard**, User Management, and a dark-themed security-oriented React frontend powered by a FastAPI PostgreSQL backend.
 
 ---
 
