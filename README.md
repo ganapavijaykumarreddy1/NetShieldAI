@@ -1,8 +1,25 @@
 # NetShield AI – Network Anomaly Detection & Threat Monitoring System
 
-Welcome to the Day 1 deliverables of **NetShield AI**, an enterprise-grade cybersecurity monitoring platform built as part of the **Infosys Springboard Virtual Internship**. 
+Welcome to **NetShield AI**, an enterprise-grade cybersecurity monitoring platform built as part of the **Infosys Springboard Virtual Internship**. 
 
-This repository contains the completed Day 1 tasks: a robust User Management Module, a dark-themed security-oriented React frontend, and a FastAPI-powered PostgreSQL backend with JWT authentication and Role-Based Access Control (RBAC).
+This repository contains a full-stack cybersecurity application featuring a robust **AI-powered Threat Detection Engine**, a **Live Network Analytics Dashboard**, User Management, and a dark-themed security-oriented React frontend powered by a FastAPI PostgreSQL backend.
+
+---
+
+## 🧠 AI Threat Detection Engine
+
+The system is equipped with a Machine Learning pipeline designed to classify live network traffic and detect malicious activities in real-time.
+
+*   **Model Architecture**: Random Forest Classifier
+*   **Evaluation Metrics**: Achieved **99.71% Weighted F1-Score** and near 100% accuracy on network traffic anomaly datasets (CIC-IDS-2017 & UNSW-NB15).
+*   **Threat Classifications**: Detects **DDoS, DoS, Botnets, Brute Force, Port Scanning, and Web Attacks** alongside Normal Traffic.
+*   **Risk Scoring Engine**: Calculates an aggregated **System Risk Score (0-100)** based on the AI's confidence levels and the severity of active threat classes.
+
+## 📊 Live Analytics Dashboard
+
+*   **Real-time Traffic Metrics**: Monitors Total Packets, Packets/sec, Bytes/sec, and Active Connections dynamically.
+*   **Active AI Flows**: Evaluates network packets and extracts statistical features in sliding windows for the ML inference pipeline.
+*   **Live Threat Feed**: A scrolling feed of predictions (Source/Destination IPs, Ports, Protocols) showing threat classifications and AI confidence percentages.
 
 ---
 
@@ -121,6 +138,8 @@ The system manages authorization and threat audits using three core relational t
 | **GET** | `/api/auth/roles` | None | Retrieves list of roles available for user registration. |
 | **GET** | `/api/users/profile` | Bearer Token | Returns details of the currently logged-on user. |
 | **PUT** | `/api/users/profile` | Bearer Token | Modifies user profiles (fullname, username, email, password). |
+| **GET** | `/api/network/overview` | Bearer Token | Fetches live network metrics (Total Packets, Bytes/sec, Active Conns). |
+| **GET** | `/api/threats/feed` | Bearer Token | Streams live AI threat predictions, active flows, and System Risk Score. |
 
 ---
 
