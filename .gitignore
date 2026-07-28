@@ -47,6 +47,10 @@ build/
 *.sqlite3
 netshield_ai.db
 
+# Data
+data/
+*.zip
+
 # IDEs
 .idea/
 .vscode/
