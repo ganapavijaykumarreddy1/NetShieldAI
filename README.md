@@ -8,21 +8,52 @@ This repository contains the completed deliverables up to **Milestone 3**, featu
 
 ## 🏆 Internship Milestones Roadmap
 
-### ✅ Milestone 1: AI Model Architecture & Dataset Evaluation
-* Trained Random Forest Classifier on CIC-IDS-2017 & UNSW-NB15 datasets achieving **99.71% F1-score**.
-* Implemented Feature Store and 38-feature canonical extractor.
+### ✅ Milestone 1: Week 1 & 2 — Project Initialization, Design Process & Core Setup
+* **Key Tasks**:
+  * Defined security monitoring objectives and cybersecurity SOC workflows.
+  * Designed system architecture, database schema, and ER diagrams.
+  * Created UI wireframes and workflow planning.
+  * Set up frontend (React + Vite + Tailwind CSS) and backend (FastAPI + SQLAlchemy) environments.
+  * Implemented JWT authentication and Role-Based Access Control (RBAC) foundation.
+  * Processed and evaluated **CIC-IDS-2017** and **UNSW-NB15** datasets.
+  * Built live packet monitoring workflows and traffic analytics dashboard.
+* **Key Outcomes**:
+  * Comprehensive understanding of network security monitoring and SOC workflows.
+  * Executed end-to-end system architecture and relational database design.
+  * Production-ready project structure with automated database initialization.
+  * Functional authentication system and live network monitoring engine.
 
-### ✅ Milestone 2: Core Full-Stack Application & Packet Pipeline
-* Built FastAPI backend with SQLite fallback and React + Tailwind CSS dark-mode UI.
-* Implemented Scapy packet capture, flow aggregation engine, and live monitoring dashboard.
+---
 
-### ✅ Milestone 3: Advanced SOC Operations, RBAC & Executive Reporting
-* **Role-Based Access Control (RBAC)**: Defined `Administrator`, `SOC Manager`, and `Security Analyst` access tiers.
-* **Unified Single Top Navigation**: Sleek, sticky navigation bar with active page highlighting and user profile menu.
-* **Admin User Management**: Provisioning users, reassigning roles, disabling accounts, and audit logging.
-* **Executive PDF Report Generator**: Custom ReportLab Platypus PDF engine with MITRE ATT&CK recommendations.
-* **SMTP Alert Settings**: Persistent email notification configuration saved to backend storage and localStorage.
-* **System Sleep Anomaly Protection**: Feature store purging, 10s cooldown, and short flow heuristics preventing false alerts on wake-up.
+### ✅ Milestone 2: Week 3 & 4 — Anomaly Detection & Intrusion Prediction
+* **Key Tasks**:
+  * Trained Random Forest anomaly detection models (**99.71% F1-score**).
+  * Evaluated model accuracy, precision, recall, and confusion matrices.
+  * Generated detailed model evaluation and anomaly detection reports.
+  * Implemented attack prediction workflows and 38-feature canonical extractor.
+  * Built threat classification modules for **DDoS, DoS, Botnets, Brute Force, Port Scanning, and Web Attacks**.
+  * Developed real-time aggregated **System Risk Scoring Engine (0-100)**.
+* **Key Outcomes**:
+  * Deployed anomaly detection and intrusion prediction systems.
+  * Built AI-powered real-time threat analysis pipelines.
+  * Applied machine learning concepts to cybersecurity threat telemetry.
+  * Streamed real-time threat detection insights to the operator console.
+
+---
+
+### ✅ Milestone 3: Week 5 & 6 — Alert Management & Security Analytics
+* **Key Tasks**:
+  * Implemented real-time threat alerting workflows and local date/time formatting.
+  * Built notification systems with persistent **SMTP Email Alert settings** and incident triage management.
+  * Generated executive **Platypus PDF & CSV Threat Intelligence Reports** with MITRE ATT&CK recommendations.
+  * Developed attack visualization dashboards and top source IP telemetry analytics.
+  * Implemented system sleep/hibernation anomaly protection (feature store purging, 10s cooldown, short flow guards).
+  * Implemented **Admin User Management** (provisioning, role reassignments, status toggles, audit logging) with a single unified sticky top navigation bar.
+* **Key Outcomes**:
+  * Full threat alerting, notification, and security analytics suite.
+  * End-to-end incident response, triage, and reporting workflows.
+  * Operationalized cybersecurity operations and threat intelligence concepts.
+  * Delivered a complete, production-grade end-to-end network security monitoring platform.
 
 ---
 
