@@ -57,6 +57,13 @@ data/
 *.swp
 *.swo
 
+# Runtime Generated Outputs & Caches
+reports_output/
+*.pdf
+*.csv
+smtp_config.json
+.gemini/
+
 # Misc
 logs/
 *.log

@@ -2,7 +2,27 @@
 
 Welcome to **NetShield AI**, an enterprise-grade cybersecurity monitoring platform built as part of the **Infosys Springboard Virtual Internship**. 
 
-This repository contains the completed deliverables up to **Milestone-2**, featuring a full-stack cybersecurity application with a robust **AI-powered Threat Detection Engine**, a **Live Network Analytics Dashboard**, User Management, and a dark-themed security-oriented React frontend powered by a FastAPI PostgreSQL backend.
+This repository contains the completed deliverables up to **Milestone 3**, featuring a full-stack enterprise cybersecurity platform with a robust **AI-powered Threat Detection Engine**, a **Live Network Analytics Dashboard**, **Role-Based Access Control (RBAC)**, an **Executive PDF Report Generator**, **SMTP Email Alert Settings**, and an **Admin User Management Console** powered by FastAPI, React, and PostgreSQL/SQLite.
+
+---
+
+## 🏆 Internship Milestones Roadmap
+
+### ✅ Milestone 1: AI Model Architecture & Dataset Evaluation
+* Trained Random Forest Classifier on CIC-IDS-2017 & UNSW-NB15 datasets achieving **99.71% F1-score**.
+* Implemented Feature Store and 38-feature canonical extractor.
+
+### ✅ Milestone 2: Core Full-Stack Application & Packet Pipeline
+* Built FastAPI backend with SQLite fallback and React + Tailwind CSS dark-mode UI.
+* Implemented Scapy packet capture, flow aggregation engine, and live monitoring dashboard.
+
+### ✅ Milestone 3: Advanced SOC Operations, RBAC & Executive Reporting
+* **Role-Based Access Control (RBAC)**: Defined `Administrator`, `SOC Manager`, and `Security Analyst` access tiers.
+* **Unified Single Top Navigation**: Sleek, sticky navigation bar with active page highlighting and user profile menu.
+* **Admin User Management**: Provisioning users, reassigning roles, disabling accounts, and audit logging.
+* **Executive PDF Report Generator**: Custom ReportLab Platypus PDF engine with MITRE ATT&CK recommendations.
+* **SMTP Alert Settings**: Persistent email notification configuration saved to backend storage and localStorage.
+* **System Sleep Anomaly Protection**: Feature store purging, 10s cooldown, and short flow heuristics preventing false alerts on wake-up.
 
 ---
 
@@ -150,3 +170,19 @@ The frontend is styled custom-tailored with Tailwind CSS matching active enterpr
 *   **Electric Neon Cyan Glows (`text-cyber-accent`)** highlighting interactive system elements.
 *   **Vibrant Threat Red Alerts (`text-cyber-danger`)** to alert operators to failed validations or gate warnings.
 *   **Fully Responsive Form Grids** shifting layouts cleanly between mobile viewports and wide-screen SOC displays.
+
+
+
+Fake Testing Module Restructure
+The floating scripts generate_dos.py and replay_pcap.py have been moved out of the root directory and properly modularized.
+To simulate traffic and test NetShieldAI, we provide a unified CLI tool.
+
+1. **Replay Existing PCAP**:
+   ```bash
+   python -m simulator.cli replay simulator/data/slammer.pcap
+   ```
+2. **Generate and Run DoS Attack**:
+   ```bash
+   # This will generate 10,000 synthetic packets and immediately replay them
+   
+   ```

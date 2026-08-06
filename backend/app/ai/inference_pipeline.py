@@ -1,6 +1,7 @@
 import os
 import pickle
 import numpy as np
+import warnings
 from typing import Dict, Any, Tuple
 from app.features.canonical import CanonicalFeatures
 from app.features.store import FeatureStore
@@ -34,7 +35,7 @@ class InferencePipeline:
             cls._instance = cls()
         return cls._instance
 
-    def __init__(self, model_dir: str = "backend/models"):
+    def __init__(self, model_dir: str = "models"):
         self.model_dir = model_dir
         self.model = None
         self.scaler = None
@@ -54,6 +55,11 @@ class InferencePipeline:
                 self.scaler = pickle.load(f)
             with open(encoder_path, "rb") as f:
                 self.encoder = pickle.load(f)
+            
+            # Avoid the joblib Parallel warning when predicting a single sample
+            if hasattr(self.model, "n_jobs"):
+                self.model.n_jobs = 1
+                
             self.is_ready = True
             print("Inference Pipeline: Models loaded successfully.")
         else:
@@ -107,9 +113,20 @@ class InferencePipeline:
         if not self.is_ready:
             # Safe fallback if models aren't trained
             return ThreatPrediction(False, "Normal Traffic", 1.0, 0.0, "Low")
+
+        # --- HEURISTIC OVERRIDES ---
+        # 1. Single/Double-packet reconnect probes or initial handshakes (<0.5s duration) are Normal Traffic
+        if feature.total_fwd_packets <= 3 and feature.flow_duration < 500000.0:
+            return ThreatPrediction(False, "Normal Traffic", 0.99, 0.0, "Low")
+
+        # 2. If it's a massive 1-way flow, it's a DoS
+        if feature.total_fwd_packets > 1000 and feature.bwd_packets_s == 0.0:
+            return ThreatPrediction(True, "DoS", 0.99, 95.0, "Critical")
             
         arr = np.array([feature.to_array()])
-        arr_scaled = self.scaler.transform(arr)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=UserWarning)
+            arr_scaled = self.scaler.transform(arr)
         
         probs = self.model.predict_proba(arr_scaled)[0]
         pred_idx = np.argmax(probs)
@@ -120,6 +137,13 @@ class InferencePipeline:
         
         risk_score, severity = self.calculate_risk_score(threat_type, confidence, feature)
         
+        # Debug log to see what the model actually thought!
+        if threat_type not in ('BENIGN', 'Normal Traffic'):
+            print(f"[*] INFERENCE DETECTED THREAT: {threat_type} (Confidence: {confidence:.2f}, Risk: {risk_score:.2f})")
+        else:
+            # Print occasionally or just a small print to confirm we are evaluating
+            print(f"[-] Inference: {threat_type} (Conf: {confidence:.2f}) - Bytes/s: {feature.flow_bytes_s:.2f}")
+
         return ThreatPrediction(is_threat, threat_type, confidence, risk_score, severity)
         
     def evaluate_all_active_flows(self) -> Dict[Tuple, ThreatPrediction]:

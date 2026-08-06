@@ -109,6 +109,7 @@ export const AuthProvider = ({ children }) => {
       login: handleLogin,
       register: handleRegister,
       logout: handleLogout,
+      handleLogout,
       updateProfile: handleUpdateProfile
     }}>
       {children}

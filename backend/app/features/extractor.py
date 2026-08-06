@@ -18,6 +18,7 @@ class FlowFeatureExtractor(TrafficConsumer):
         # Key: (src_ip, dst_ip, src_port, dst_port, protocol)
         self.flows: Dict[Tuple, Dict] = {}
         self.feature_store = FeatureStore.get_instance()
+        self.last_global_packet_time: float = 0.0
 
     def consume_packet(self, event: PacketEvent) -> None:
         result = self.extract_features(event)
@@ -26,9 +27,6 @@ class FlowFeatureExtractor(TrafficConsumer):
             self.feature_store.update_feature(key, feature)
 
     def _get_flow_key(self, event: PacketEvent) -> Tuple:
-        # Standardize direction: smaller IP is "forward" to match both directions?
-        # Actually, in dataset (like CICIDS2017), "forward" is usually the direction of the first packet seen.
-        # So we keep it exactly as the first packet seen.
         return (event.source_ip, event.destination_ip, event.source_port, event.destination_port, event.protocol)
         
     def _get_reverse_flow_key(self, event: PacketEvent) -> Tuple:
@@ -39,13 +37,30 @@ class FlowFeatureExtractor(TrafficConsumer):
         rev_key = self._get_reverse_flow_key(event)
         
         current_time = event.timestamp.timestamp()
+
+        # System Sleep / Hibernation Detection across global traffic:
+        # If no packets processed for >10 seconds, system was asleep/suspended.
+        if self.last_global_packet_time > 0 and (current_time - self.last_global_packet_time > 10.0):
+            import logging
+            logging.getLogger(__name__).warning(
+                f"[SYSTEM SLEEP RESET] Gap of {current_time - self.last_global_packet_time:.1f}s detected. Clearing stale flows."
+            )
+            self.flows.clear()
+            self.feature_store.clear()
+
+        self.last_global_packet_time = current_time
         
         is_forward = True
         
         if rev_key in self.flows:
             key = rev_key
             is_forward = False
-        elif key not in self.flows:
+        
+        # If individual flow has been idle for >10 seconds, reset flow state to prevent distorted IAT calculation
+        if key in self.flows and (current_time - self.flows[key]['last_time'] > 10.0):
+            del self.flows[key]
+
+        if key not in self.flows:
             # Create new flow
             self.flows[key] = {
                 'start_time': current_time,
@@ -66,6 +81,7 @@ class FlowFeatureExtractor(TrafficConsumer):
                 'psh_count': 0,
                 'ack_count': 0
             }
+
             
         flow = self.flows[key]
         
@@ -107,22 +123,36 @@ class FlowFeatureExtractor(TrafficConsumer):
         duration = flow['last_time'] - flow['start_time']
         duration_s = duration if duration > 0 else 0.000001 # prevent div/0
         
+        # CICIDS2017 uses microseconds for duration and IATs
+        duration_us = duration_s * 1e6
+        
         fwd_lens = flow['fwd_pkt_lens']
         bwd_lens = flow['bwd_pkt_lens']
         all_lens = flow['pkt_lens']
         
-        flow_iats = flow['flow_iats']
-        fwd_iats = flow['fwd_iats']
-        bwd_iats = flow['bwd_iats']
+        flow_iats_us = [x * 1e6 for x in flow['flow_iats']]
+        fwd_iats_us = [x * 1e6 for x in flow['fwd_iats']]
+        bwd_iats_us = [x * 1e6 for x in flow['bwd_iats']]
         
         fwd_mean = float(np.mean(fwd_lens)) if fwd_lens else 0.0
         bwd_mean = float(np.mean(bwd_lens)) if bwd_lens else 0.0
         all_mean = float(np.mean(all_lens)) if all_lens else 0.0
         all_var = float(np.var(all_lens)) if all_lens else 0.0
         
+        if duration == 0:
+            flow_bytes_s_val = 0.0
+            flow_packets_s_val = 0.0
+            fwd_packets_s_val = 0.0
+            bwd_packets_s_val = 0.0
+        else:
+            flow_bytes_s_val = float((flow['fwd_bytes'] + flow['bwd_bytes']) / duration_s)
+            flow_packets_s_val = float((flow['fwd_packets'] + flow['bwd_packets']) / duration_s)
+            fwd_packets_s_val = float(flow['fwd_packets'] / duration_s)
+            bwd_packets_s_val = float(flow['bwd_packets'] / duration_s)
+            
         return CanonicalFeatures(
             destination_port=float(key[3]),
-            flow_duration=float(duration),
+            flow_duration=float(duration_us),
             total_fwd_packets=float(flow['fwd_packets']),
             total_length_fwd_packets=float(flow['fwd_bytes']),
             fwd_packet_length_max=float(np.max(fwd_lens)) if fwd_lens else 0.0,
@@ -131,15 +161,15 @@ class FlowFeatureExtractor(TrafficConsumer):
             bwd_packet_length_max=float(np.max(bwd_lens)) if bwd_lens else 0.0,
             bwd_packet_length_min=float(np.min(bwd_lens)) if bwd_lens else 0.0,
             bwd_packet_length_mean=bwd_mean,
-            flow_bytes_s=float((flow['fwd_bytes'] + flow['bwd_bytes']) / duration_s),
-            flow_packets_s=float((flow['fwd_packets'] + flow['bwd_packets']) / duration_s),
-            flow_iat_mean=float(np.mean(flow_iats)) if flow_iats else 0.0,
-            flow_iat_max=float(np.max(flow_iats)) if flow_iats else 0.0,
-            flow_iat_min=float(np.min(flow_iats)) if flow_iats else 0.0,
-            fwd_iat_total=float(np.sum(fwd_iats)) if fwd_iats else 0.0,
-            bwd_iat_total=float(np.sum(bwd_iats)) if bwd_iats else 0.0,
-            fwd_packets_s=float(flow['fwd_packets'] / duration_s),
-            bwd_packets_s=float(flow['bwd_packets'] / duration_s),
+            flow_bytes_s=flow_bytes_s_val,
+            flow_packets_s=flow_packets_s_val,
+            flow_iat_mean=float(np.mean(flow_iats_us)) if flow_iats_us else 0.0,
+            flow_iat_max=float(np.max(flow_iats_us)) if flow_iats_us else 0.0,
+            flow_iat_min=float(np.min(flow_iats_us)) if flow_iats_us else 0.0,
+            fwd_iat_total=float(np.sum(fwd_iats_us)) if fwd_iats_us else 0.0,
+            bwd_iat_total=float(np.sum(bwd_iats_us)) if bwd_iats_us else 0.0,
+            fwd_packets_s=fwd_packets_s_val,
+            bwd_packets_s=bwd_packets_s_val,
             packet_length_mean=all_mean,
             packet_length_variance=all_var,
             fin_flag_count=float(flow['fin_count']),

@@ -24,12 +24,17 @@ class TrafficService:
         from app.features.extractor import FlowFeatureExtractor
         self.flow_extractor = FlowFeatureExtractor()
         self.network_engine.register_consumer(self.flow_extractor)
+        
+        from app.traffic.services.threat_detection_service import ThreatDetectionService
+        self.threat_detection_service = ThreatDetectionService.get_instance()
 
     def start(self):
         self.network_engine.start()
+        self.threat_detection_service.start()
 
     def stop(self):
         self.network_engine.stop()
+        self.threat_detection_service.stop()
 
     def get_statistics(self):
         return self.metrics_engine.get_statistics()

@@ -40,3 +40,10 @@ class UserOut(UserBase):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+class UserRoleUpdate(BaseModel):
+    role_name: str
+
+class UserStatusUpdate(BaseModel):
+    is_active: bool
+

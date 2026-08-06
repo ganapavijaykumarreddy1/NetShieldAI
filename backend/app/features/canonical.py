@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import List
 
 class CanonicalFeatures(BaseModel):
@@ -63,4 +63,4 @@ class CanonicalFeatures(BaseModel):
 
     @classmethod
     def feature_names(cls) -> List[str]:
-        return list(cls.__fields__.keys())
+        return list(cls.model_fields.keys())

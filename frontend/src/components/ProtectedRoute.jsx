@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, token, loading } = useAuth();
@@ -28,8 +29,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (allowedRoles && user) {
     const userRole = user.role?.role_name;
     if (!allowedRoles.includes(userRole)) {
-      // Fallback redirect to their profile page if unauthorized for this path
-      return <Navigate to="/profile" replace />;
+      toast.error(`Access Restricted: Requiring role (${allowedRoles.join(' or ')})`, { id: 'rbac-error' });
+      return <Navigate to="/dashboard" replace />;
     }
   }
 
@@ -37,3 +38,4 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 export default ProtectedRoute;
+

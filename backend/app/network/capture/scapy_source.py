@@ -28,12 +28,27 @@ class ScapySource(PacketSource):
             self._thread.join(timeout=2.0)
 
     def _sniff_loop(self) -> None:
-        sniff(
-            iface=self.interface,
-            prn=self._handle_packet,
-            stop_filter=lambda _: self._stop_event.is_set(),
-            store=False
-        )
+        import os
+        import time
+        test_pcap = os.environ.get("TEST_PCAP")
+        if test_pcap and os.path.exists(test_pcap):
+            print(f"[*] ScapySource: Reading offline PCAP directly: {test_pcap}")
+            # We use a custom loop to add a tiny delay, so the UI can poll and see the attack happening live
+            from scapy.all import PcapReader
+            with PcapReader(test_pcap) as pcap_reader:
+                for packet in pcap_reader:
+                    if self._stop_event.is_set():
+                        break
+                    self._handle_packet(packet)
+                    time.sleep(0.01)  # 10ms delay to simulate real traffic
+            print("[*] ScapySource: Finished reading PCAP.")
+        else:
+            sniff(
+                iface=self.interface,
+                prn=self._handle_packet,
+                stop_filter=lambda _: self._stop_event.is_set(),
+                store=False
+            )
 
     def _handle_packet(self, packet) -> None:
         try:

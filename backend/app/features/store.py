@@ -45,3 +45,10 @@ class FeatureStore:
                         del self.latest_features[k]
                     del self.last_updated[k]
             return active
+
+    def clear(self):
+        """Wipes all cached flow features (used on system sleep/wake reset)"""
+        with self.lock:
+            self.latest_features.clear()
+            self.last_updated.clear()
+

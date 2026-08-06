@@ -5,8 +5,9 @@ import logging
 
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
-from app.models.user import Role
-from app.api.endpoints import auth, users, network, threats
+from app.models.user import Role, User
+from app.models.soc import Alert, Incident, Notification, ThreatIntelligence, ReportHistory
+from app.api.endpoints import auth, users, network, threats, alerts, incidents, notifications, threat_intel, analytics, reports
 from app.traffic.services.traffic_service import TrafficService
 logger = logging.getLogger("netshield_main")
 
@@ -55,9 +56,13 @@ def seed_roles() -> None:
                 db.add(db_role)
                 logger.info(f"Seeding default role: {name}")
                 
+        # Seed Threat Intel
+        from app.soc.threat_intel.service import ThreatIntelService
+        ThreatIntelService(db).seed_database_if_empty()
+                
         db.commit()
     except Exception as e:
-        logger.error(f"Error seeding default roles on startup: {e}")
+        logger.error(f"Error seeding on startup: {e}")
         db.rollback()
     finally:
         db.close()
@@ -70,6 +75,12 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(network.router, prefix="/api/network", tags=["Network"])
 app.include_router(threats.router, prefix="/api", tags=["Threats"])
+app.include_router(alerts.router, prefix="/api/soc", tags=["SOC"])
+app.include_router(incidents.router, prefix="/api/soc", tags=["SOC"])
+app.include_router(notifications.router, prefix="/api/soc", tags=["SOC"])
+app.include_router(threat_intel.router, prefix="/api/soc", tags=["SOC"])
+app.include_router(analytics.router, prefix="/api/soc", tags=["SOC"])
+app.include_router(reports.router, prefix="/api/soc", tags=["SOC"])
 
 @app.on_event("startup")
 def startup_event():

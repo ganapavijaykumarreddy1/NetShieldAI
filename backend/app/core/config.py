@@ -19,6 +19,17 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
+    # Inference Engine
+    MODEL_PATH: str = "models/registry/random_forest_v1.pkl"
+    THREAT_RISK_THRESHOLD: float = 0.50
+    
+    # Notifications/SMTP
+    SMTP_SERVER: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_SENDER_EMAIL: str = "your_email@gmail.com"
+    SMTP_APP_PASSWORD: str = "your_app_password"
+    SMTP_RECIPIENT_EMAIL: str = "admin_email@gmail.com"
+
     class Config:
         # Resolve path to .env in parent folder of app
         env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".env")
