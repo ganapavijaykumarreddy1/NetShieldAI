@@ -31,7 +31,7 @@ class FeatureStore:
         with self.lock:
             return self.latest_features.get(key)
             
-    def get_all_active_features(self, timeout_seconds: int = 10) -> Dict[Tuple, CanonicalFeatures]:
+    def get_all_active_features(self, timeout_seconds: int = 60) -> Dict[Tuple, CanonicalFeatures]:
         """Returns features updated within the last `timeout_seconds`"""
         with self.lock:
             now = datetime.utcnow()

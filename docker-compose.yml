@@ -1,0 +1,52 @@
+services:
+  # 1. PostgreSQL Database Service
+  postgres:
+    image: postgres:15-alpine
+    container_name: netshield_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: netshield_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. FastAPI Backend Service (with Scapy & ML Inference Engine)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: netshield_backend
+    restart: always
+    environment:
+      - SECRET_KEY=8c4e402e6bb45b8fb7b24329d66144e548efeb052b6ee0cdcaefbc13a078d2ab
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=120
+      - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/netshield_db
+      - BACKEND_CORS_ORIGINS=http://localhost,http://localhost:80,http://localhost:5173
+    ports:
+      - "8000:8000"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    depends_on:
+      - postgres
+
+  # 3. React Frontend Nginx Web Server
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: netshield_frontend
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

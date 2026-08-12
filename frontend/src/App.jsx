@@ -13,6 +13,8 @@ import ThreatIntel from './pages/ThreatIntel';
 import Reports from './pages/Reports';
 import Analytics from './pages/Analytics';
 import UserManagement from './pages/UserManagement';
+import DemoMode from './pages/DemoMode';
+import ValidationHealth from './pages/ValidationHealth';
 import { Toaster } from 'react-hot-toast';
 
 // Authenticated Layout with Sticky Top Navbar
@@ -61,6 +63,23 @@ function App() {
             <Route path="/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
             <Route path="/incidents" element={<ProtectedRoute><Incidents /></ProtectedRoute>} />
             <Route path="/threat-intel" element={<ProtectedRoute><ThreatIntel /></ProtectedRoute>} />
+            {/* Administrator ONLY Diagnostic & Demonstration Tools */}
+            <Route 
+              path="/demo" 
+              element={
+                <ProtectedRoute allowedRoles={['Administrator']}>
+                  <DemoMode />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/health-validation" 
+              element={
+                <ProtectedRoute allowedRoles={['Administrator']}>
+                  <ValidationHealth />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* SOC Manager & Administrator restricted pages */}
             <Route 

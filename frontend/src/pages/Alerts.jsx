@@ -160,7 +160,14 @@ const Alerts = () => {
         priority: escalatePriority,
         resolution_notes: escalateNotes
       });
-      toast.success(`Incident Created for Alert ${escalateAlert.alert_id}!`);
+
+      try {
+        await sendAlertEmail(escalateAlert.alert_id);
+        toast.success(`Incident Ticket & Email Alert Dispatched for ${escalateAlert.alert_id}!`);
+      } catch (emailErr) {
+        toast.success(`Incident Ticket Created for Alert ${escalateAlert.alert_id}!`);
+      }
+
       setEscalateAlert(null);
       fetchAlerts();
     } catch (err) {

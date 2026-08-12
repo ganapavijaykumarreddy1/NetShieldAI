@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   Shield, Activity, AlertOctagon, FileWarning, BarChart2, 
-  BookOpen, FileText, Users, User, LogOut, ChevronDown 
+  BookOpen, FileText, Users, User, LogOut, ChevronDown, Zap, Gauge 
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -92,7 +92,7 @@ const Navbar = () => {
           <div className="relative">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-3 p-1.5 rounded-xl bg-cyber-bg/60 border border-cyber-border hover:border-cyber-accent transition-all"
+              className="flex items-center gap-3 p-1.5 rounded-xl bg-cyber-bg/60 border border-cyber-border hover:border-cyber-accent transition-all cursor-pointer"
             >
               <div className="h-8 w-8 rounded-lg bg-cyber-accent/20 border border-cyber-accent/40 flex items-center justify-center font-bold text-cyber-accent font-mono text-sm">
                 {(user?.full_name || user?.username || 'U')[0].toUpperCase()}
@@ -110,7 +110,7 @@ const Navbar = () => {
             {/* Dropdown Menu */}
             {dropdownOpen && (
               <div 
-                className="absolute right-0 mt-2 w-56 bg-cyber-card border border-cyber-border rounded-xl shadow-2xl overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150"
+                className="absolute right-0 mt-2 w-60 bg-cyber-card border border-cyber-border rounded-xl shadow-2xl overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150"
                 onMouseLeave={() => setDropdownOpen(false)}
               >
                 <div className="px-4 py-3 border-b border-cyber-border/60 bg-cyber-bg/50">
@@ -118,6 +118,34 @@ const Navbar = () => {
                   <p className="text-xs font-bold text-white truncate">{user?.username}</p>
                   <div className="mt-1">{getRoleBadge(roleName)}</div>
                 </div>
+
+                {isAdmin && (
+                  <>
+                    <div className="px-4 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-cyber-muted bg-slate-900/40">
+                      System Admin Tools
+                    </div>
+
+                    <Link
+                      to="/demo"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-indigo-300 hover:bg-indigo-950/50 transition-colors font-medium"
+                    >
+                      <Zap className="h-4 w-4 text-indigo-400" />
+                      <span>Interactive Demo Mode</span>
+                    </Link>
+
+                    <Link
+                      to="/health-validation"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-emerald-300 hover:bg-emerald-950/50 transition-colors font-medium"
+                    >
+                      <Gauge className="h-4 w-4 text-emerald-400" />
+                      <span>AI Health &amp; Metrics</span>
+                    </Link>
+
+                    <div className="border-t border-cyber-border/60 my-1" />
+                  </>
+                )}
 
                 <Link
                   to="/profile"

@@ -114,15 +114,31 @@ class InferencePipeline:
             # Safe fallback if models aren't trained
             return ThreatPrediction(False, "Normal Traffic", 1.0, 0.0, "Low")
 
-        # --- HEURISTIC OVERRIDES ---
-        # 1. Single/Double-packet reconnect probes or initial handshakes (<0.5s duration) are Normal Traffic
-        if feature.total_fwd_packets <= 3 and feature.flow_duration < 500000.0:
+        # --- HEURISTIC THREAT EVALUATION RULES ---
+        # 1. Routine background connections, single/few-packet handshakes (<15 packets) are Normal Traffic
+        if feature.total_fwd_packets <= 15:
             return ThreatPrediction(False, "Normal Traffic", 0.99, 0.0, "Low")
 
-        # 2. If it's a massive 1-way flow, it's a DoS
-        if feature.total_fwd_packets > 1000 and feature.bwd_packets_s == 0.0:
-            return ThreatPrediction(True, "DoS", 0.99, 95.0, "Critical")
-            
+        # 2. SSH/FTP Brute Force: High-frequency auth payload bursts on port 22, 21, or 3389 with PSH flags
+        if feature.destination_port in (22.0, 21.0, 3389.0) and feature.psh_flag_count > 5:
+            return ThreatPrediction(True, "Brute Force", 0.975, 82.0, "Critical")
+
+        # 3. Web Attack: Unencrypted HTTP exploit probe (Port 80/8080) with high PSH burst and 0 response
+        if feature.destination_port in (80.0, 8080.0) and feature.psh_flag_count > 25 and feature.bwd_packets_s == 0.0:
+            return ThreatPrediction(True, "Web Attack", 0.968, 79.0, "Critical")
+
+        # 4. Botnet C2 Beaconing: Command & Control IRC / beacon stream on port 6667 / 8443
+        if feature.destination_port in (6667.0, 8443.0, 6668.0, 6669.0):
+            return ThreatPrediction(True, "Botnet", 0.988, 88.0, "Critical")
+
+        # 5. DDoS / UDP Flood: Heavy flood payloads or massive unidirectional packet streams (UDP / port 80 flood)
+        if feature.bwd_packets_s == 0.0 and (feature.fwd_packet_length_mean > 500.0 or feature.total_fwd_packets > 800):
+            return ThreatPrediction(True, "DDoS", 0.994, 95.0, "Critical")
+
+        # 6. Port Scanning: High probe packet count (>30 packets) with high SYN probe rate (>400 pkts/s) without PSH payload
+        if feature.total_fwd_packets > 30 and feature.fwd_packets_s > 400.0 and feature.psh_flag_count == 0:
+            return ThreatPrediction(True, "PortScan", 0.982, 78.5, "Critical")
+
         arr = np.array([feature.to_array()])
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=UserWarning)

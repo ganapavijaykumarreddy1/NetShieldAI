@@ -27,6 +27,15 @@ class IncidentService:
         
         self.db.commit()
         self.db.refresh(new_incident)
+
+        # Dispatch SMTP Email Notification on Escalation
+        try:
+            from app.soc.notifications.providers.gmail_provider import GmailNotificationProvider
+            provider = GmailNotificationProvider()
+            provider.send(alert, self.db)
+        except Exception as e:
+            pass
+
         return new_incident
 
     def update_incident(self, incident_id_str: str, update_data: IncidentUpdate) -> Incident:

@@ -7,8 +7,10 @@ from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
 from app.models.user import Role, User
 from app.models.soc import Alert, Incident, Notification, ThreatIntelligence, ReportHistory
-from app.api.endpoints import auth, users, network, threats, alerts, incidents, notifications, threat_intel, analytics, reports
+from app.api.endpoints import auth, users, network, threats, alerts, incidents, notifications, threat_intel, analytics, reports, validation, demo
 from app.traffic.services.traffic_service import TrafficService
+from app.core.logging_config import system_logger
+
 logger = logging.getLogger("netshield_main")
 
 # Auto-generate database tables on startup
@@ -60,6 +62,25 @@ def seed_roles() -> None:
         from app.soc.threat_intel.service import ThreatIntelService
         ThreatIntelService(db).seed_database_if_empty()
                 
+        # Seed Default Administrator Account
+        admin_email = "admin@netshield.ai"
+        admin_exists = db.query(User).filter(User.email == admin_email).first()
+        if not admin_exists:
+            admin_role = db.query(Role).filter(Role.role_name == "Administrator").first()
+            if admin_role:
+                from app.core.security import get_password_hash
+                hashed_pwd = get_password_hash("Admin@123")
+                admin_user = User(
+                    username="admin",
+                    email=admin_email,
+                    password_hash=hashed_pwd,
+                    full_name="NetShield Administrator",
+                    role_id=admin_role.id,
+                    is_active=True
+                )
+                db.add(admin_user)
+                logger.info(f"Seeded default administrator: {admin_email}")
+
         db.commit()
     except Exception as e:
         logger.error(f"Error seeding on startup: {e}")
@@ -81,6 +102,9 @@ app.include_router(notifications.router, prefix="/api/soc", tags=["SOC"])
 app.include_router(threat_intel.router, prefix="/api/soc", tags=["SOC"])
 app.include_router(analytics.router, prefix="/api/soc", tags=["SOC"])
 app.include_router(reports.router, prefix="/api/soc", tags=["SOC"])
+app.include_router(validation.router, prefix="/api/validation", tags=["Validation & Health"])
+app.include_router(demo.router, prefix="/api/demo", tags=["Interactive Demo"])
+
 
 @app.on_event("startup")
 def startup_event():

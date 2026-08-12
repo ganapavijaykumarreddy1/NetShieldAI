@@ -8,19 +8,20 @@ role = db.query(Role).filter_by(role_name="Administrator").first()
 if not role:
     print("Administrator role not found!")
 else:
-    email = "vijay1sa@netshield.ai"
+    email = "admin@netshield.ai"
     existing = db.query(User).filter_by(email=email).first()
     if not existing:
         user = User(
+            username="admin",
             email=email,
-            password_hash=get_password_hash("password123"),
-            full_name="Vijay",
+            password_hash=get_password_hash("Admin@123"),
+            full_name="NetShield Administrator",
             role_id=role.id,
             is_active=True
         )
         db.add(user)
         db.commit()
-        print(f"User {email} created successfully with password: password123")
+        print(f"User {email} created successfully with password: Admin@123")
     else:
         print(f"User {email} already exists!")
 db.close()

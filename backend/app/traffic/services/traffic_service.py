@@ -1,6 +1,5 @@
 from app.traffic.analytics.metrics_engine import MetricsEngine
 from app.network.engine import PacketMonitoringEngine
-from app.network.capture.simulated_source import SimulatedSource
 from app.network.capture.scapy_source import ScapySource
 
 class TrafficService:
@@ -14,8 +13,6 @@ class TrafficService:
 
     def __init__(self):
         self.metrics_engine = MetricsEngine()
-        
-        # Using SimulatedSource by default for testing.
         self.packet_source = ScapySource()
         
         self.network_engine = PacketMonitoringEngine(self.packet_source)
