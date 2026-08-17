@@ -131,6 +131,16 @@ For ease of evaluation, the backend is built with **automatic SQLite fallback**.
 
 ---
 
+## ☁️ Cloud Deployment & Live Traffic Capture
+
+When deployed to a cloud environment (like AWS EC2 using `docker-compose`), NetShield AI transitions from a local simulator into a **real-world intrusion detection system**.
+
+*   **100% Real Traffic:** The backend Docker container is granted `NET_ADMIN` and `NET_RAW` privileges. This allows the Python `Scapy` engine to hook directly into the AWS server's network interface, sniffing every single real incoming and outgoing packet (HTTP, SSH, etc.) traversing the server.
+*   **Global Accessibility:** The React dashboard, served via Nginx, is accessible from anywhere in the world via the server's Public IP.
+*   **Centralized Telemetry:** If multiple security analysts log into the dashboard from different laptops globally, they all view the exact same real-time traffic feed representing the telemetry of the centralized AWS server. Every time a user visits the dashboard, their own HTTP requests are captured by the sniffer and processed by the AI pipeline!
+
+---
+
 ## 📂 Project Structure
 
 ```text
