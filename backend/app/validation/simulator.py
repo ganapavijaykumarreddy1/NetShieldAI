@@ -223,63 +223,48 @@ class DemoSimulatorEngine:
             })
             time.sleep(1.5)
 
-            # Step 4: Alert Generation & Logging (ONLY FOR CONFIRMED THREATS)
+            # Step 4 & 5: Alert Generation & SOC Notification (Deduplicated)
             FeatureStore.get_instance().update_feature(flow_key, feature)
             if prediction.is_threat and prediction.threat_type not in ('BENIGN', 'Normal Traffic'):
                 t2 = time.time()
-                import uuid
-                alt_str_id = f"ALT-{uuid.uuid4().hex[:8].upper()}"
-                alert = Alert(
-                    alert_id=alt_str_id,
-                    src_ip=src_ip,
-                    dst_ip=dst_ip,
-                    protocol=protocol,
-                    attack_type=prediction.threat_type,
-                    severity=prediction.severity,
-                    confidence=prediction.confidence,
-                    risk_score=prediction.risk_score,
-                    recommended_action="Investigate source IP and inspect related firewall logs.",
-                    status="New"
-                )
-                db.add(alert)
-                db.commit()
-                db.refresh(alert)
-                execution.generated_alert_id = alert.id
+                
+                # Use AlertEngine to automatically handle deduplication and NotificationManager dispatch
+                from app.soc.alerts.engine import AlertEngine
+                alert_engine = AlertEngine(db)
+                alert = alert_engine.process_prediction(src_ip, dst_ip, protocol, prediction)
+                
+                if not alert:
+                    # Deduplicated (background sniffer caught it first). Fetch existing.
+                    alert = db.query(Alert).filter_by(src_ip=src_ip, dst_ip=dst_ip, attack_type=prediction.threat_type).order_by(Alert.id.desc()).first()
+                
+                execution.generated_alert_id = alert.id if alert else None
 
                 alert_time_ms = (time.time() - t2) * 1000
                 perf.record_latency("alert_creation_ms", alert_time_ms)
-                alerts_logger.info(f"[Demo Alert] Alert ID #{alert.id} ({alt_str_id}) created for {prediction.threat_type} (Severity: {prediction.severity})")
-
-                execution.add_log(4, "Alert Management", f"Generated Security Alert #{alert.id} ({alt_str_id}) — {prediction.severity} Severity", {
-                    "alert_id": alert.id,
-                    "alert_code": alt_str_id,
-                    "src_ip": alert.src_ip,
-                    "dst_ip": alert.dst_ip,
-                    "status": alert.status
-                })
+                
+                if alert:
+                    alerts_logger.info(f"[Demo Alert] Alert ID #{alert.id} processed for {prediction.threat_type} (Severity: {prediction.severity})")
+                    execution.add_log(4, "Alert Management", f"Security Alert #{alert.id} processed — {prediction.severity} Severity", {
+                        "alert_id": alert.id,
+                        "src_ip": alert.src_ip,
+                        "dst_ip": alert.dst_ip,
+                        "status": alert.status
+                    })
+                    
+                    if prediction.severity in ("High", "Critical"):
+                        execution.email_sent = True
+                        email_msg = "Alert dispatched via SOC Notification Manager (Gmail/Dashboard)."
+                        notifications_logger.info(f"[Demo Notification] Alert #{alert.id}: {email_msg}")
+                        execution.add_log(5, "SOC Notification & Triage", f"Alert registered in SOC Queue for analyst review. {email_msg}", {
+                            "alert_id": alert.id,
+                            "email_sent": True
+                        })
+                    else:
+                        execution.add_log(5, "SOC Notification & Triage", "Notification threshold not triggered.")
+                else:
+                    execution.add_log(4, "Alert Management", "Threat detected but skipped logging due to deduplication.", {})
             else:
                 execution.add_log(4, "Alert Management", "Traffic classified as BENIGN / Normal. No alert generated.")
-
-            time.sleep(1.5)
-
-            # Step 5: SOC Triage & Notification (No automatic incident creation)
-            if prediction.is_threat and prediction.severity in ("High", "Critical"):
-                t3 = time.time()
-                provider = GmailNotificationProvider()
-                success = provider.send(alert, db)
-                email_time_ms = (time.time() - t3) * 1000
-                perf.record_latency("gmail_delivery_ms", email_time_ms)
-                execution.email_sent = success
-                email_msg = "Dispatched via Gmail TLS SMTP channel." if success else "Notification logged to SOC queue."
-
-                notifications_logger.info(f"[Demo Notification] Alert #{alert.id}: {email_msg}")
-
-                execution.add_log(5, "SOC Notification & Triage", f"Alert registered in SOC Queue for analyst review. {email_msg}", {
-                    "alert_id": alert.id,
-                    "email_sent": success
-                })
-            else:
-                execution.add_log(5, "SOC Notification & Triage", "Notification threshold not triggered.")
 
             time.sleep(1.5)
 
