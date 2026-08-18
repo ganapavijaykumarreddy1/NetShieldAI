@@ -3,7 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   Shield, Activity, AlertOctagon, FileWarning, BarChart2, 
-  BookOpen, FileText, Users, User, LogOut, ChevronDown, Zap, Gauge 
+  BookOpen, FileText, Users, User, LogOut, ChevronDown, Zap, Gauge,
+  Menu, X
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -11,6 +12,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const roleName = user?.role?.role_name || 'Security Analyst';
   const isAdmin = roleName === 'Administrator';
@@ -19,6 +21,7 @@ const Navbar = () => {
   const onLogout = async (e) => {
     if (e) e.preventDefault();
     setDropdownOpen(false);
+    setMobileMenuOpen(false);
     try {
       if (logout) await logout();
     } catch (err) {
@@ -27,7 +30,6 @@ const Navbar = () => {
       navigate('/login');
     }
   };
-
 
   const getRoleBadge = (role) => {
     switch (role) {
@@ -55,16 +57,26 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* Left: Brand Logo & Title */}
-          <Link to="/dashboard" className="flex items-center gap-3 group">
-            <div className="p-2 bg-cyber-accent/10 border border-cyber-accent/30 rounded-xl group-hover:border-cyber-accent transition-all">
-              <Shield className="h-6 w-6 text-cyber-accent animate-pulse" />
-            </div>
-            <div>
-              <span className="text-lg font-bold text-white tracking-wider font-mono">NetShield<span className="text-cyber-accent">AI</span></span>
-              <p className="text-[10px] text-cyber-muted tracking-widest uppercase">SOC Command Center</p>
-            </div>
-          </Link>
+          {/* Left: Hamburger & Brand Logo */}
+          <div className="flex items-center gap-3">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 -ml-2 rounded-lg text-cyber-muted hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+            
+            <Link to="/dashboard" className="flex items-center gap-3 group">
+              <div className="p-2 bg-cyber-accent/10 border border-cyber-accent/30 rounded-xl group-hover:border-cyber-accent transition-all">
+                <Shield className="h-6 w-6 text-cyber-accent animate-pulse" />
+              </div>
+              <div className="hidden sm:block">
+                <span className="text-lg font-bold text-white tracking-wider font-mono">NetShield<span className="text-cyber-accent">AI</span></span>
+                <p className="text-[10px] text-cyber-muted tracking-widest uppercase">SOC Command Center</p>
+              </div>
+            </Link>
+          </div>
 
           {/* Center: Navigation Links */}
           <div className="hidden md:flex items-center space-x-1">
@@ -99,7 +111,7 @@ const Navbar = () => {
               </div>
               <div className="hidden sm:block text-left pr-1">
                 <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <span>{user?.full_name || user?.username || 'User'}</span>
+                  <span className="truncate max-w-[100px]">{user?.full_name || user?.username || 'User'}</span>
                   {getRoleBadge(roleName)}
                 </div>
                 <div className="text-[10px] text-cyber-muted truncate max-w-[140px]">{user?.email}</div>
@@ -183,6 +195,33 @@ const Navbar = () => {
 
         </div>
       </div>
+      
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-cyber-border/70 bg-cyber-card/95 backdrop-blur-md">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            {navLinks.filter(l => l.show).map((link) => {
+              const Icon = link.icon;
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                    isActive 
+                      ? 'bg-cyber-accent/15 text-cyber-accent border border-cyber-accent/30' 
+                      : 'text-cyber-muted hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{link.name}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
