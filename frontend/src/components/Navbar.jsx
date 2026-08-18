@@ -71,7 +71,7 @@ const Navbar = () => {
               <div className="p-2 bg-cyber-accent/10 border border-cyber-accent/30 rounded-xl group-hover:border-cyber-accent transition-all">
                 <Shield className="h-6 w-6 text-cyber-accent animate-pulse" />
               </div>
-              <div className="hidden sm:block">
+              <div className="block">
                 <span className="text-lg font-bold text-white tracking-wider font-mono">NetShield<span className="text-cyber-accent">AI</span></span>
                 <p className="text-[10px] text-cyber-muted tracking-widest uppercase">SOC Command Center</p>
               </div>
