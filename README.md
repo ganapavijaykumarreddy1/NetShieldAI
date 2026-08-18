@@ -1,6 +1,6 @@
 # NetShield AI – Network Anomaly Detection & Threat Monitoring System
 
-**🚀 Live Deployment:** [https://netshield-ai-demo.com](https://netshield-ai-demo.com) *(Replace with your actual deployed link)*
+**🚀 Live Deployment:** [http://40.192.61.130](http://40.192.61.130)
 
 Welcome to **NetShield AI**, an enterprise-grade cybersecurity monitoring platform built as part of the **Infosys Springboard Virtual Internship**. 
 
