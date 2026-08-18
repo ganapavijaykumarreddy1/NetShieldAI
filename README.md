@@ -1,8 +1,10 @@
 # NetShield AI – Network Anomaly Detection & Threat Monitoring System
 
+**🚀 Live Deployment:** [https://netshield-ai-demo.com](https://netshield-ai-demo.com) *(Replace with your actual deployed link)*
+
 Welcome to **NetShield AI**, an enterprise-grade cybersecurity monitoring platform built as part of the **Infosys Springboard Virtual Internship**. 
 
-This repository contains the completed deliverables up to **Milestone 3**, featuring a full-stack enterprise cybersecurity platform with a robust **AI-powered Threat Detection Engine**, a **Live Network Analytics Dashboard**, **Role-Based Access Control (RBAC)**, an **Executive PDF Report Generator**, **SMTP Email Alert Settings**, and an **Admin User Management Console** powered by FastAPI, React, and PostgreSQL/SQLite.
+This repository contains the completed deliverables up to **Milestone 4**, featuring a full-stack enterprise cybersecurity platform with a robust **AI-powered Threat Detection Engine**, a **Live Network Analytics Dashboard**, **Role-Based Access Control (RBAC)**, an **Executive PDF Report Generator**, **SMTP Email Alert Settings**, and an **Admin User Management Console** powered by FastAPI, React, and PostgreSQL/SQLite, fully prepared for cloud deployment.
 
 ---
 
@@ -57,6 +59,20 @@ This repository contains the completed deliverables up to **Milestone 3**, featu
 
 ---
 
+### ✅ Milestone 4: Week 7 & 8 — System Deployment & Project Delivery
+* **Key Tasks**:
+  * Containerized the frontend and backend using Docker and `docker-compose`.
+  * Deployed the FastAPI backend to a cloud provider (e.g., AWS EC2 / Render).
+  * Deployed the React frontend to a cloud hosting service (e.g., Vercel / Netlify).
+  * Established global accessibility, CORS policies, and production environment variables.
+  * Finalized comprehensive project documentation, user guides, and architecture diagrams.
+* **Key Outcomes**:
+  * Successfully launched a live, publicly accessible version of the NetShield AI platform.
+  * Transitioned from a local development simulator to a fully cloud-native distributed architecture.
+  * Concluded all final deliverables for the Infosys Springboard Virtual Internship.
+
+---
+
 ## 🧠 AI Threat Detection Engine
 
 The system is equipped with a Machine Learning pipeline designed to classify live network traffic and detect malicious activities in real-time.
@@ -78,7 +94,27 @@ The system is equipped with a Machine Learning pipeline designed to classify liv
 
 For ease of evaluation, the backend is built with **automatic SQLite fallback**. If a local PostgreSQL instance is not detected, the app will log a warning and automatically provision a local database file `netshield_ai.db` inside the `backend/` directory, allowing the system to run out-of-the-box.
 
-### 1. Backend Setup (FastAPI)
+### 🐳 Option A: Docker Setup (Recommended)
+
+1. Ensure you have **Docker** and **Docker Compose** installed.
+2. Clone the repository and navigate into it:
+   ```bash
+   git clone https://github.com/yourusername/NetShieldAI.git
+   cd NetShieldAI
+   ```
+3. Boot up the entire stack (Frontend, Backend, and Database) with a single command:
+   ```bash
+   docker-compose up --build
+   ```
+4. Access the platform locally:
+   * **React Dashboard**: [http://localhost:5173](http://localhost:5173)
+   * **API Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+### 💻 Option B: Manual Local Setup
+
+#### 1. Backend Setup (FastAPI)
 
 1.  Navigate to the `backend` directory:
     ```bash
@@ -139,6 +175,16 @@ When deployed to a cloud environment (like AWS EC2 using `docker-compose`), NetS
 *   **Global Accessibility:** The React dashboard, served via Nginx, is accessible from anywhere in the world via the server's Public IP.
 *   **Centralized Telemetry:** If multiple security analysts log into the dashboard from different laptops globally, they all view the exact same real-time traffic feed representing the telemetry of the centralized AWS server. Every time a user visits the dashboard, their own HTTP requests are captured by the sniffer and processed by the AI pipeline!
 
+### 🌍 How Other Users Can Access the Live App
+
+Since the platform is centrally deployed, anyone with the frontend link can securely access the platform without needing local setup.
+
+1.  **Open the Application:** Navigate to the live dashboard URL.
+2.  **Create an Account:** Click on **Register** to create a new analyst profile. Select your desired role (e.g., *Security Analyst*).
+3.  **Log In:** Authenticate using your newly created credentials. The backend will issue a secure JWT session.
+4.  **Monitor Live Traffic:** You will be placed into the unified SOC dashboard. Since the backend processes global traffic, you and all other logged-in users worldwide will see the **exact same live network events and alerts** streaming in real-time.
+5.  **Collaborate:** Admin users can manage roles, approve access for new users joining the platform, and monitor audit logs, simulating a real enterprise SOC environment.
+
 ---
 
 ## 📂 Project Structure
@@ -185,45 +231,39 @@ The system manages authorization and threat audits using three core relational t
 2.  **`users`**: Stores user profiles, hashed credentials, and maps them to a single role.
 3.  **`audit_logs`**: Tracks authentication audits (successful logins, logouts, failed login attempts, profile changes, and client IP mappings).
 
-*SQL definitions are available in [database/schema.sql](file:///C:/Users/vijay/OneDrive/Documents/pythonspace/NetShieldAI/database/schema.sql) and seed entries in [database/seed.sql](file:///C:/Users/vijay/OneDrive/Documents/pythonspace/NetShieldAI/database/seed.sql).*
+*SQL definitions are available in [`database/schema.sql`](database/schema.sql) and seed entries in [`database/seed.sql`](database/seed.sql).*
+
+## 🧪 Simulating Traffic & Testing
+
+To easily simulate traffic and test NetShield AI's threat detection capabilities, you can use the built-in simulation tools directly from the web interface.
+
+1. **Log into the Dashboard**.
+2. **Click the "Simulate Traffic" (or Demo) button** available in the UI.
+3. This will automatically inject synthetic network flow data or replay malicious traffic samples (such as DoS, Botnet, or Brute Force attacks) into the live pipeline.
+4. Watch the **Live Analytics Dashboard** as the AI engine instantly analyzes, classifies, and triggers alerts on the incoming simulated threats!
 
 ---
 
-## 🛠️ API Reference Documentation
+## 🤝 Contributing & Forking
 
-| Method | Endpoint | Authentication | Description |
-| :--- | :--- | :--- | :--- |
-| **POST** | `/api/auth/register` | None | Provisions a new user account and binds them to a role. |
-| **POST** | `/api/auth/login` | None | Verifies credentials and returns a signed JWT access token. |
-| **POST** | `/api/auth/logout` | Bearer Token | Terminates session and logs the disconnection audit trail. |
-| **GET** | `/api/auth/roles` | None | Retrieves list of roles available for user registration. |
-| **GET** | `/api/users/profile` | Bearer Token | Returns details of the currently logged-on user. |
-| **PUT** | `/api/users/profile` | Bearer Token | Modifies user profiles (fullname, username, email, password). |
-| **GET** | `/api/network/overview` | Bearer Token | Fetches live network metrics (Total Packets, Bytes/sec, Active Conns). |
-| **GET** | `/api/threats/feed` | Bearer Token | Streams live AI threat predictions, active flows, and System Risk Score. |
+We welcome contributions and improvements to the NetShield AI platform! 
 
----
+### How to Fork and Use the Project
 
-## 🎨 UI Design System & Guidelines
-
-The frontend is styled custom-tailored with Tailwind CSS matching active enterprise cybersecurity platforms (such as CrowdStrike and Microsoft Defender):
-*   **Deep Dark Backgrounds (`bg-cyber-bg`)** to prevent operator eye strain during night shifts.
-*   **Electric Neon Cyan Glows (`text-cyber-accent`)** highlighting interactive system elements.
-*   **Vibrant Threat Red Alerts (`text-cyber-danger`)** to alert operators to failed validations or gate warnings.
-*   **Fully Responsive Form Grids** shifting layouts cleanly between mobile viewports and wide-screen SOC displays.
-
-
-
-Fake Testing Module Restructure
-The floating scripts generate_dos.py and replay_pcap.py have been moved out of the root directory and properly modularized.
-To simulate traffic and test NetShieldAI, we provide a unified CLI tool.
-
-1. **Replay Existing PCAP**:
+1. **Fork the Repository:** Click the **Fork** button at the top right of the GitHub page to create a copy in your own account.
+2. **Clone your Fork:**
    ```bash
-   python -m simulator.cli replay simulator/data/slammer.pcap
+   git clone https://github.com/YOUR_USERNAME/NetShieldAI.git
+   cd NetShieldAI
    ```
-2. **Generate and Run DoS Attack**:
+3. **Make Changes:** Create a new branch for your feature or bug fix:
    ```bash
-   # This will generate 10,000 synthetic packets and immediately replay them
-   
+   git checkout -b feature/amazing-new-feature
    ```
+4. **Test Locally:** Follow the **Docker Setup** instructions above to quickly spin up the environment and verify your changes.
+5. **Commit & Push:** Push your changes to your fork:
+   ```bash
+   git commit -m "Added an amazing new feature"
+   git push origin feature/amazing-new-feature
+   ```
+6. **Pull Request:** Open a Pull Request from your branch back to the original repository.
